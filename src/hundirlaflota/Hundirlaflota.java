@@ -19,7 +19,8 @@ public class Hundirlaflota {
         char jugadorPC [][] = new char[10][10];
         char jugadorHumano [][] = new char[10][10];
         char coordenadasValidasX[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
-        int disparos = 10;//empiezo por 10 para probar...pero DEBEN SER 50!!
+        int datosJuego [] = new int[2]; //Posición 0 los disparos, posición 1 los tocados 
+        //int disparos = 50, tocados = 23;//50 disparos fácil y 23 tocados para saber que hemos ganado (total casillas ocupadas por todos los barcos)
         int cantidad; //empiezo por 10 para modo fácil
         char lancha = 'L', buque = 'B', acorazado = 'Z', portaaviones = 'P',charCoordenadaX = 'z';
         boolean okCoordenadaX = false;
@@ -31,19 +32,26 @@ public class Hundirlaflota {
         llenadoInicialTableros(jugadorHumano);
         
         cantidad = 5;
-        colocarBarcos(jugadorPC, cantidad, lancha);
+        colocarBarcos(jugadorPC, cantidad, lancha); //1 casilla
         cantidad = 3;
         colocarBarcos(jugadorPC, cantidad, buque); //3 casillas HORIZONTALES
         cantidad = 1;
-        colocarBarcos(jugadorPC, cantidad, acorazado);
+        colocarBarcos(jugadorPC, cantidad, acorazado); //4 casillas HORIZONTALES
         cantidad = 1;
-        colocarBarcos(jugadorPC, cantidad, portaaviones);
+        colocarBarcos(jugadorPC, cantidad, portaaviones); //5 casillas VERTICALES
+        //20 TOCADO para saber que hemos hundido todos
         
         verTablero(jugadorPC);
         verTablero(jugadorHumano);
         
-        //Mientras me queden disparos...
-        while(disparos > 0){
+        //Juego Fácil con todos los barcos, son 50 disparos y el total de impactos el suma nº de barcos x dimensiones de cada uno... = 20
+        
+        datosJuego[0] = 50;
+        datosJuego[1] = 23;
+        
+        //Mientras me queden disparos... disparos > 0 && tocados > 0
+        while(datosJuego[0] > 0 && datosJuego[1] > 0){ //Posición 0 tenemos los disparos, posición 1 los impactos
+            System.out.println("Tenemos: " + datosJuego[0] + " misiles y deberíamos dar en el blanco " + datosJuego[1] + " veces para ganar");
             while(okCoordenadaX == false){ //Mientras no me de una coordenada correcta del eje X
                 System.out.println("Dame la coordenada de disparo X (A - J)");
                 charCoordenadaX = input.nextLine().toLowerCase().charAt(0);
@@ -56,8 +64,7 @@ public class Hundirlaflota {
             }
             coordenadaX = traduceCoordenadaX(charCoordenadaX, coordenadasValidasX);
 //            System.out.println(coordenadaX + " " + coordenadaY);
-            disparos = disparoMisil(jugadorPC, jugadorHumano, coordenadaX, coordenadaY, disparos);  // guardamos si hay return la actualización del fallo en repetir coordenada  
-            disparos--;
+            disparoMisil(jugadorPC, jugadorHumano, coordenadaX, coordenadaY, datosJuego);  // guardamos si hay return la actualización del fallo en repetir coordenada  
 //            System.out.println(disparos);
             coordenadaX = coordenadaY = 10;
             okCoordenadaX = false;
@@ -210,7 +217,7 @@ public class Hundirlaflota {
     //las coordenadas las tenemos que poner invertidas en la matriz ya que
     //al jugador le pedimos X (A-J) siendo este eje en la matriz las columas (segundos corchetes)
     //y la Y (0 - 9) siendo estas la FILAS, por ello invertimos el orden.
-    public static int disparoMisil(char jugadorPC[][], char jugadorHumano[][], int x, int y, int disparos){
+    public static void disparoMisil(char jugadorPC[][], char jugadorHumano[][], int x, int y, int datosJuego[]){
         if(jugadorHumano[y][x] != 'A' && jugadorHumano[y][x] != 'X'){
             if(jugadorPC[y][x] == '-'){
                 System.out.println("Mi Capitán, hemos fallado... ha caído al AGUA!");
@@ -221,13 +228,18 @@ public class Hundirlaflota {
                 System.out.println("Mi Capitán, hemos dado al enemigo... TOCADO!");
                 jugadorHumano[y][x] = 'X';
                 verTablero(jugadorHumano);
+                datosJuego[1] -= 1; //Quitamos un impacto (un barco alcanzado, cuando el todos hayan sido impactados, VICTORIA!
+                if(datosJuego[1] == 0)
+                            System.out.println("Mi capitán... HEMOS GANADO!!... hemos HUNDIDO LA FLOTA enemiga!!!");
             }
         }
         else{ 
             System.out.println("Mi Capitán, esa posición ya ha sido atacada!! Dame otras coordenadas!");
             verTablero(jugadorHumano);
-            return disparos+1;
+            datosJuego[0] += 1; //Añadimos el misil lanzado erróneamente a una posición ya disparada
         }
-        return disparos;
+        datosJuego[0] -= 1; //Quitamos un misil
+        if(datosJuego[0] == 0)
+            System.out.println("Mi capitán... HEMOS PERDIDO!!... no tenemos más misiles");
     }    
 }
