@@ -20,8 +20,8 @@ public class Hundirlaflota {
         char jugadorHumano [][] = new char[10][10];
         char coordenadasValidasX[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
         int disparos = 10;//empiezo por 10 para probar...pero DEBEN SER 50!!
-        int numLanchas = 10; //empiezo por 10 para modo fácil
-        char lancha = 'L', charCoordenadaX = 'z';
+        int cantidad; //empiezo por 10 para modo fácil
+        char lancha = 'L', buque = 'B', acorazado = 'Z', portaaviones = 'P',charCoordenadaX = 'z';
         boolean okCoordenadaX = false;
         int coordenadaX = 10, coordenadaY = 10; //inicializo a 10 por el while, sacandolo de rango y entrando en él
         
@@ -30,7 +30,14 @@ public class Hundirlaflota {
         llenadoInicialTableros(jugadorPC);
         llenadoInicialTableros(jugadorHumano);
         
-        colocarBarcos(jugadorPC, numLanchas, lancha);
+        cantidad = 5;
+        colocarBarcos(jugadorPC, cantidad, lancha);
+        cantidad = 3;
+        colocarBarcos(jugadorPC, cantidad, buque); //3 casillas HORIZONTALES
+        cantidad = 1;
+        colocarBarcos(jugadorPC, cantidad, acorazado);
+        cantidad = 1;
+        colocarBarcos(jugadorPC, cantidad, portaaviones);
         
         verTablero(jugadorPC);
         verTablero(jugadorHumano);
@@ -79,19 +86,110 @@ public class Hundirlaflota {
         }
     }
     
+    //Genera número aleatorio de 0 a 9
+    public static int numAleaotorio(){
+        return (int)(Math.random()*10); //de 0 a 9 porque como sólo coje 9.99999 el 9 sería la parte entera
+    }
+    
     //Colocación de los barcos
-    public static void colocarBarcos(char jugador[][], int cantidad, char tipo){
-        int x, y;
+    public static void colocarBarcos(char jugadorPC[][], int cantidad, char tipo){
+        int fil, col;
+        boolean entraElBarco;
         
-        while(cantidad > 0){
-            x = (int)(Math.random()*10); //de 0 a 9 porque como sólo coje 9.99999 el 9 sería la parte entera
-            y = (int)(Math.random()*10);
-            if(jugador[x][y] == '-'){
-                jugador[x][y] = tipo;
+        if(tipo == 'L'){
+            while(cantidad > 0){
+            fil = numAleaotorio();
+            col = numAleaotorio();
+            if(jugadorPC[fil][col] == '-'){
+                jugadorPC[fil][col] = tipo;
                 cantidad--;
+                }
             }
         }
-    }  
+        else if(tipo == 'B'){
+            while(cantidad > 0){ 
+                entraElBarco = true;
+            while(entraElBarco){
+            do{    
+                fil = numAleaotorio();
+                col = numAleaotorio();
+            }while(col + 2 > 9);//Evitar que si sumamos 2 posiciones nos salbamos de la fila en número de columnas
+            for(int i = col; i<=col+2; i++){ //mirar de cambiar por un binarySearch?? pensar en cómo y lo que devuelve...
+                if(jugadorPC[fil][i] != '-'){
+                    entraElBarco = false;
+                    }
+            }
+            
+            if(!entraElBarco){
+                entraElBarco = true;
+            }
+            else{          
+                for(int i = col; i<=col+2; i++){
+                    jugadorPC[fil][i] = tipo;
+                }
+                cantidad--;
+                entraElBarco = false;
+            }
+            }     
+            }
+        }
+        
+        else if(tipo == 'Z'){
+            while(cantidad > 0){ 
+                entraElBarco = true;
+            while(entraElBarco){
+            do{    
+                fil = numAleaotorio();
+                col = numAleaotorio();
+            }while(col + 3 > 9);//Evitar que si sumamos 3 posiciones (inical + 3 = 4 dimensión Acorazado) nos salbamos de la fila en número de columnas
+            for(int i = col; i<=col+3; i++){ //mirar de cambiar por un binarySearch?? pensar en cómo y lo que devuelve...
+                if(jugadorPC[fil][i] != '-'){
+                    entraElBarco = false;
+                    }
+            }
+            
+            if(!entraElBarco){
+                entraElBarco = true;
+            }
+            else{          
+                for(int i = col; i<=col+3; i++){
+                    jugadorPC[fil][i] = tipo;
+                }
+                cantidad--;
+                entraElBarco = false;
+            }
+            }     
+            }
+        }
+        
+        else if(tipo == 'P'){
+            while(cantidad > 0){ 
+                entraElBarco = true;
+            while(entraElBarco){
+            do{    
+                fil = numAleaotorio();
+                col = numAleaotorio();
+            }while(fil + 4 > 9);//Evitar que si sumamos 3 posiciones (inical + 3 = 4 dimensión Acorazado) nos salbamos de la fila en número de columnas
+            for(int i = fil; i<=fil+3; i++){ //mirar de cambiar por un binarySearch?? pensar en cómo y lo que devuelve...
+                if(jugadorPC[i][col] != '-'){
+                    entraElBarco = false;
+                    }
+            }
+            
+            if(!entraElBarco){
+                entraElBarco = true;
+            }
+            else{          
+                for(int i = fil; i<=fil+4; i++){
+                    jugadorPC[i][col] = tipo;
+                }
+                cantidad--;
+                entraElBarco = false;
+            }
+            }     
+            }
+        }
+    }
     
     
     //Verificamos que lo recogido como letra por teclado está dentro del vector char de coordenadasValidasX
