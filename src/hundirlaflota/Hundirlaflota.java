@@ -19,9 +19,8 @@ public class Hundirlaflota {
         char jugadorPC [][] = new char[10][10];
         char jugadorHumano [][] = new char[10][10];
         char coordenadasValidasX[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
-        int datosJuego [] = new int[2]; //Posición 0 los disparos, posición 1 los tocados 
-        //int disparos = 50, tocados = 23;//50 disparos fácil y 23 tocados para saber que hemos ganado (total casillas ocupadas por todos los barcos)
-        int dimensionesLancha = 1, dimensionesBuque = 3, dimensionesAcorazado = 4, dimensionesPortaaviones = 5, cantidad, dificultadElegida; //empiezo por 10 para modo fácil
+        int datosJuego [] = new int[2]; //Posición 0 los disparos, posición 1 los tocados        
+        int dimensionesLancha = 1, dimensionesBuque = 3, dimensionesAcorazado = 4, dimensionesPortaaviones = 5, cantidad, dificultadElegida, totalPosicionesTablero = 100; //empiezo por 10 para modo fácil
         char lancha = 'L', buque = 'B', acorazado = 'Z', portaaviones = 'P', charCoordenadaX = 'z';
         boolean okCoordenadaX = false;
         int coordenadaX = 10, coordenadaY = 10; //inicializo a 10 por el while, sacandolo de rango y entrando en él
@@ -45,10 +44,10 @@ public class Hundirlaflota {
             System.out.println("\nDime en que dificultad quieres jugar:\n"
                 + "1. Fácil: tu enemigo tiene 5 Lanchas, 3 Buques, 1 Acorazado y 1 Portaaviones. Dispones de 50 misiles\n"
                 + "2. Medio: tu enemigo tiene 2 Lanchas, 1 Buque, 1 Acorazado y 1 Portaaviones. Dispones de 30 misiles\n"
-                + "3. Difícil: tu enemigo tiene 1 Lancha y 1 Buque. Dispones de 10 misiles.");
+                + "3. Difícil: tu enemigo tiene 1 Lancha y 1 Buque. Dispones de 10 misiles.\n"
+                + "4. Personalizada: elige las cantidades y tipos de barco, así como tu nº de misiles.");
             dificultadElegida = input.nextInt();
-        } while(dificultadElegida < 1 || dificultadElegida > 3);
-        input.nextLine(); //Limpio el buffer
+        } while(dificultadElegida < 1 || dificultadElegida > 4);
         
         switch(dificultadElegida){
             case 1:
@@ -83,10 +82,48 @@ public class Hundirlaflota {
                 datosJuego[0] = 10;//Misiles
                 datosJuego[1] = 4;//13 TOCADO para saber que hemos hundido todos
                 break;
+            case 4:
+                datosJuego[0] = 0;//Inicializo posición Misiles
+                datosJuego[1] = 0;//Inicializao posición Tocado
+                System.out.println("Mínimo de misiles elegible 1 y máximo 100. Mínimo 1 Lancha máximo tablero lleno (100 espacios)."); 
+                
+                System.out.println("Dime número de lanchas del enemigo (ocupa 1 espacio):");
+                cantidad = input.nextInt();
+                totalPosicionesTablero -= cantidad;
+                datosJuego[1] += cantidad;
+                System.out.println("Quedan: " + totalPosicionesTablero + " espacios en el tablero");
+                colocarBarcos(jugadorPC, cantidad, lancha, dimensionesLancha); //1 casilla
+                
+                System.out.println("Dime número de buques del enemigo (ocupan 3 espacios):");
+                cantidad = input.nextInt();
+                totalPosicionesTablero -= cantidad;
+                datosJuego[1] += cantidad;
+                System.out.println("Quedan: " + totalPosicionesTablero + " espacios en el tablero");
+                colocarBarcos(jugadorPC, cantidad, buque, dimensionesBuque); //3 casillas HORIZONTALES
+                
+                System.out.println("Dime número de acorazados del enemigo (ocupan 4 espacios):");
+                cantidad = input.nextInt();
+                totalPosicionesTablero -= cantidad;
+                datosJuego[1] += cantidad;
+                System.out.println("Quedan: " + totalPosicionesTablero + " espacios en el tablero");
+                colocarBarcos(jugadorPC, cantidad, acorazado, dimensionesAcorazado); //4 casillas HORIZONTALES
+                
+                System.out.println("Dime número de acorazados del enemigo (ocupan 5 espacios):");
+                cantidad = input.nextInt();
+                totalPosicionesTablero -= cantidad;
+                datosJuego[1] += cantidad;
+                System.out.println("Quedan: " + totalPosicionesTablero + " espacios en el tablero");
+                colocarBarcos(jugadorPC, cantidad, portaaviones, dimensionesPortaaviones); //5 casillas HORIZONTALES
+                
+                System.out.println("Nº de misiles, mínimo: " + datosJuego[1]);
+                datosJuego[0] = input.nextInt();
+                break;
         }
         
         verTablero(jugadorPC); //Provisional, para eliminar, es para pruebas
         verTablero(jugadorHumano);
+        
+        input.nextLine(); //Limpio el buffer
         
         //Mientras me queden disparos... disparos > 0 && tocados > 0
         while(datosJuego[0] > 0 && datosJuego[1] > 0){ //Posición 0 tenemos los disparos, posición 1 los impactos
@@ -144,15 +181,13 @@ public class Hundirlaflota {
         
         if(tipo == 'L'){
             while(cantidad > 0){
-            fil = numAleaotorio();
-            col = numAleaotorio();
-            if(jugadorPC[fil][col] == '-'){
+            if(jugadorPC[fil = numAleaotorio()][col = numAleaotorio()] == '-'){
                 jugadorPC[fil][col] = tipo;
                 cantidad--;
                 }
             }
         }
-        else if(tipo == 'B'){
+        else if(tipo != 'P'){
             while(cantidad > 0){ 
                 entraElBarco = true;
             while(entraElBarco){
@@ -160,34 +195,6 @@ public class Hundirlaflota {
                 fil = numAleaotorio();
                 col = numAleaotorio();
             }while(col + dimensionBarco > 9);//Evitar que si sumamos 2 posiciones nos salbamos de la fila en número de columnas
-            for(int i = col; i<=col + dimensionBarco; i++){ //mirar de cambiar por un binarySearch?? pensar en cómo y lo que devuelve...
-                if(jugadorPC[fil][i] != '-'){
-                    entraElBarco = false;
-                    }
-            }
-            
-            if(!entraElBarco){
-                entraElBarco = true;
-            }
-            else if(entraElBarco){          
-                for(int i = col; i<=col + dimensionBarco; i++){
-                    jugadorPC[fil][i] = tipo;
-                }
-                cantidad--;
-                entraElBarco = false;
-            }
-            }     
-            }
-        }
-        
-        else if(tipo == 'Z'){
-            while(cantidad > 0){ 
-                entraElBarco = true;
-            while(entraElBarco){
-            do{    
-                fil = numAleaotorio();
-                col = numAleaotorio();
-            }while(col + dimensionBarco > 9);//Evitar que si sumamos 3 posiciones (inical + 3 = 4 dimensión Acorazado) nos salbamos de la fila en número de columnas
             for(int i = col; i<=col + dimensionBarco; i++){ //mirar de cambiar por un binarySearch?? pensar en cómo y lo que devuelve...
                 if(jugadorPC[fil][i] != '-'){
                     entraElBarco = false;
@@ -216,7 +223,7 @@ public class Hundirlaflota {
                 fil = numAleaotorio();
                 col = numAleaotorio();
             }while(fil + dimensionBarco > 9);//Evitar que si sumamos 4 posiciones (inical + 4 = 5 dimensión Portaaviones) nos salbamos de la fila en número de columnas
-            for(int i = fil; i<=fil+3; i++){ //mirar de cambiar por un binarySearch?? pensar en cómo y lo que devuelve...
+            for(int i = fil; i<=fil + dimensionBarco; i++){ //mirar de cambiar por un binarySearch?? pensar en cómo y lo que devuelve...
                 if(jugadorPC[i][col] != '-'){
                     entraElBarco = false;
                     }
