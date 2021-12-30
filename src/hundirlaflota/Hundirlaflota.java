@@ -20,26 +20,73 @@ public class Hundirlaflota {
         char jugadorHumano [][] = new char[10][10];
         char coordenadasValidasX[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};//Vector con las coordenadas válidas en X
         int datosJuego [] = new int[2]; //Posición 0 los misiles, posición 1 los tocados        
-        int coordenadaX, coordenadaY, cantidad, dificultadElegida; 
+        int coordenadaX, coordenadaY, dificultadElegida; 
         char charCoordenadaX = 'z';
         boolean okCoordenadaX = false;
-             
-        //Instrucciones de uso del videojuego.
-        System.out.println("Bienvenido a HUNDIR LA FLOTA!!\n"
-                + "\nINTRUCCIONES DEL JUEGO:\n"
-                + "- Serás el Capitán de esta fragata de guerra y ordenarás los ataques.\n"
-                + "- Cada disparo consumirá 1 misil.\n"
-                + "- Si la posición ha sido previamente atacada, serás avisado y tu misil no será lanzado.\n"
-                + "- Si destruyes todos los barcos enemigos, ganarás.\n"
-                + "- Si gastas tus misiles sin destruir todos los barcos, habrás perdido.\n"
-                + "- Marcaremos en tu tablero los disparos al agua con A y los impactos a un barco enemigo con X.\n"
-                + "- Primero te pediremos la coordenada de disparo en el eje X que irá de A a J.\n"
-                + "- Segundo te pediremos la coordenada de disparo en el eje Y que irá de 0 a 9.\n"
-                + "- Elige el modo de dificultad y empieza el ataque!!");
         
-        //Llenado con el carácter '-' ambas matrices.
         llenadoInicialTableros(jugadorPC);
         llenadoInicialTableros(jugadorHumano);
+        
+        mostrarInstrucciones();
+        
+        dificultadElegida = menuDificultad();
+        
+        switchCaseDificultad(dificultadElegida, jugadorPC, datosJuego);       
+        
+        //verTablero(jugadorPC);//NOTA: Para ver el tablero del PC descomentar esta línea de código
+        verTablero(jugadorHumano);
+        
+        //Mientras me queden misiles o barcos por hundir...
+        while(datosJuego[0] > 0 && datosJuego[1] > 0){//Posición 0 tenemos los misiles, posición 1 los impactos
+            //Mostramos marcador de Misiles restantes y los impactos necesarios para la victoria                
+            System.out.println("\nTenemos: " + datosJuego[0] + " misiles y deberíamos dar en el blanco " + datosJuego[1] + " veces para ganar\n");
+            while(okCoordenadaX == false){ //Mientras no me de una coordenada correcta del eje X válida
+                System.out.println("Dame la coordenada de disparo X (A - J)");
+                charCoordenadaX = input.nextLine().toLowerCase().charAt(0);
+                //A continuación verificamos que lo recogido como char por teclado está dentro del vector char de coordenadasValidasX
+                //No hago un .sort previo del vector puesto que el vector char tiene sus valores ordenados en ASCII
+                if(Arrays.binarySearch(coordenadasValidasX, charCoordenadaX)>=0)
+                    okCoordenadaX = true;//Si existía dentro del vector, salimos del while.
+            }
+            do{
+                System.out.println("Dame la coordenada de disparo en eje Y (0 - 9)");
+                coordenadaY = input.nextInt();
+                input.nextLine();
+            }while(coordenadaY < 0 || coordenadaY > 9);           
+            
+            coordenadaX = Arrays.binarySearch(coordenadasValidasX, charCoordenadaX);//Obtengo la equivalencia del carácter en coordenada numérica para la matriz
+            disparoMisil(jugadorPC, jugadorHumano, coordenadaX, coordenadaY, datosJuego);//Lanzamos el misil con todos los datos
+            okCoordenadaX = false;//Volvemos a poner el "interruptor" a false para entrar a pedir coordenada X
+        }
+    }
+    
+    //****************** FUNCIONES *******************  
+    
+    //Lleno inicial de '-' ambas matrices por filas, tratándolo como vectores cada fila y usar el .fill
+    public static void llenadoInicialTableros(char jugador[][]){
+        for(int i=0; i<jugador.length; i++) 
+            Arrays.fill(jugador[i], '-');//Relleno por filas y no recorriendo la matriz con el método de vectores .fill
+    }
+    
+    //Muestra las instrucciones de uso del videojuego.
+    public static void mostrarInstrucciones(){
+        System.out.println("Bienvenido a HUNDIR LA FLOTA!!\n"
+            + "\nINTRUCCIONES DEL JUEGO:\n"
+            + "- Serás el Capitán de esta fragata de guerra y ordenarás los ataques.\n"
+            + "- Cada disparo consumirá 1 misil.\n"
+            + "- Si la posición ha sido previamente atacada, serás avisado y tu misil no será lanzado.\n"
+            + "- Si destruyes todos los barcos enemigos, ganarás.\n"
+            + "- Si gastas tus misiles sin destruir todos los barcos, habrás perdido.\n"
+            + "- Marcaremos en tu tablero los disparos al agua con A y los impactos a un barco enemigo con X.\n"
+            + "- Primero te pediremos la coordenada de disparo en el eje X que irá de A a J.\n"
+            + "- Segundo te pediremos la coordenada de disparo en el eje Y que irá de 0 a 9.\n"
+            + "- Elige el modo de dificultad y empieza el ataque!!");
+    }
+    
+    //Menú de selección de la dificultad del juego
+    public static int menuDificultad(){
+        int dificultadElegida;
+        Scanner input = new Scanner(System.in);
         
         do{
             System.out.println("\nDime en que dificultad quieres jugar:\n"
@@ -49,6 +96,13 @@ public class Hundirlaflota {
                 + "4. Personalizada: elige las cantidades de cada tipo de barco, así como el nº de misiles.");
             dificultadElegida = input.nextInt();
         }while(dificultadElegida < 1 || dificultadElegida > 4);//Repetimos mientras no nos de una opción de menú válida
+        return dificultadElegida;
+    }
+    
+    //Con la dificultad seleccionada rellenamos el tablero en función de la misma
+    public static void switchCaseDificultad(int dificultadElegida, char jugadorPC[][], int datosJuego[]){
+        int cantidad;
+        Scanner input = new Scanner(System.in);
         
         switch(dificultadElegida){
             case 1://Fácil
@@ -112,42 +166,6 @@ public class Hundirlaflota {
                 }while(datosJuego[0] < datosJuego[1] || datosJuego[0] > 100);//Aseguramos que mínimo lleve los misiles necesarios para hundir todos los barcos sin fallos
                 break;
         }
-        
-        verTablero(jugadorPC);//NOTA: Para ver el tablero del PC descomentar esta línea de código
-        verTablero(jugadorHumano);
-        
-        input.nextLine();//Limpiamos el buffer de entrada para recoger el char siguiente pues viene con el \n del int previo.
-                
-        //Mientras me queden misiles o barcos por hundir...
-        while(datosJuego[0] > 0 && datosJuego[1] > 0){//Posición 0 tenemos los misiles, posición 1 los impactos
-            //Mostramos marcador de Misiles restantes y los impactos necesarios para la victoria                
-            System.out.println("\nTenemos: " + datosJuego[0] + " misiles y deberíamos dar en el blanco " + datosJuego[1] + " veces para ganar\n");
-            while(okCoordenadaX == false){ //Mientras no me de una coordenada correcta del eje X válida
-                System.out.println("Dame la coordenada de disparo X (A - J)");
-                charCoordenadaX = input.nextLine().toLowerCase().charAt(0);
-                //A continuación verificamos que lo recogido como char por teclado está dentro del vector char de coordenadasValidasX
-                //No hago un .sort previo del vector puesto que el vector char tiene sus valores ordenados en ASCII
-                if(Arrays.binarySearch(coordenadasValidasX, charCoordenadaX)>=0)
-                    okCoordenadaX = true;//Si existía dentro del vector, salimos del while.
-            }
-            do{
-                System.out.println("Dame la coordenada de disparo en eje Y (0 - 9)");
-                coordenadaY = input.nextInt();
-                input.nextLine();
-            }while(coordenadaY < 0 || coordenadaY > 9);           
-            
-            coordenadaX = Arrays.binarySearch(coordenadasValidasX, charCoordenadaX);//Obtengo la equivalencia del carácter en coordenada numérica para la matriz
-            disparoMisil(jugadorPC, jugadorHumano, coordenadaX, coordenadaY, datosJuego);//Lanzamos el misil con todos los datos
-            okCoordenadaX = false;//Volvemos a poner el "interruptor" a false para entrar a pedir coordenada X
-        }
-    }
-    
-    //****************** FUNCIONES *******************    
-    
-    //Lleno inicial de '-' ambas matrices por filas, tratándolo como vectores cada fila y usar el .fill
-    public static void llenadoInicialTableros(char jugador[][]){
-        for(int i=0; i<jugador.length; i++) 
-            Arrays.fill(jugador[i], '-');//Relleno por filas y no recorriendo la matriz con el método de vectores .fill
     }
     
     //Ver por pantalla cómo está relleno el tablero
