@@ -99,7 +99,7 @@ public class Hundirlaflota {
         return dificultadElegida;
     }
     
-    //Con la dificultad seleccionada rellenamos el tablero en función de la misma
+    //Con la dificultad seleccionada rellenamos el tablero en función de la misma, si es personalizada, solicitamos los datos
     public static void switchCaseDificultad(int dificultadElegida, char jugadorPC[][], int datosJuego[]){
         int cantidad;
         Scanner input = new Scanner(System.in);
